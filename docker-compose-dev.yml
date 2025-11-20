@@ -1,0 +1,23 @@
+services:
+  file-service:
+    container_name: file-service
+    build: 
+      context: ./FIleService/
+      dockerfile: Dockerfile
+    ports:
+      - "9001:9001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:9001
+    restart: unless-stopped
+  
+  seq: 
+    container_name: fs_seq
+    image: datalust/seq:latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "true"
+    ports:
+      - "8081:80"
+      - "5341:5341"
+    restart: unless-stopped
