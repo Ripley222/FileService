@@ -17,6 +17,12 @@ public abstract class MediaAsset
     public StorageKey FinalKey { get; protected set; }
     public MediaOwner Owner { get; protected set; }
 
+    //EfCore constructor
+    protected MediaAsset()
+    {
+        
+    }
+    
     protected MediaAsset(
         Guid id,
         MediaData mediaData,

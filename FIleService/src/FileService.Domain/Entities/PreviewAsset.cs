@@ -15,6 +15,11 @@ public class PreviewAsset : MediaAsset
 
     public static readonly string[] AllowedExtensions = ["jpg", "jpeg", "png", "webp"];
 
+    //EfCore constructor
+    private PreviewAsset() 
+    {
+    }
+    
     private PreviewAsset(
         Guid id,
         MediaData mediaData,
