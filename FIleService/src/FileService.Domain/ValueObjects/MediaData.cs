@@ -10,6 +10,11 @@ public sealed record MediaData
     public long Size { get; private set; }
     public int ExpectedChunksCount { get; private set; }
 
+    //EfCore ctor
+    private MediaData()
+    {
+    }
+    
     public MediaData(FileName fileName, ContentType contentType, long size, int expectedChunksCount)
     {
         FileName = fileName;

@@ -19,6 +19,11 @@ public class VideoAsset : MediaAsset
 
     public StorageKey HlsRootKey { get; private set; } = null!;
 
+    //EfCore constructor
+    private VideoAsset() 
+    {
+    }
+    
     private VideoAsset(
         Guid id,
         MediaData mediaData,
