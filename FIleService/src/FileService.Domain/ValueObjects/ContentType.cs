@@ -26,7 +26,7 @@ public sealed record ContentType
         var category = contentType switch
         {
             _ when contentType.Contains("video", StringComparison.InvariantCultureIgnoreCase) => MediaType.Video,
-            _ when contentType.Contains("image", StringComparison.CurrentCultureIgnoreCase) => MediaType.Image,
+            _ when contentType.Contains("image", StringComparison.InvariantCultureIgnoreCase) => MediaType.Image,
             _ when contentType.Contains("audio", StringComparison.InvariantCultureIgnoreCase) => MediaType.Audio,
             _ => MediaType.Unknown,
         };
