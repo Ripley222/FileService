@@ -49,7 +49,7 @@ public class MediaAssertConfiguration : IEntityTypeConfiguration<MediaAsset>
 
         builder.Property(m => m.CreatedAt).HasColumnName("created_at");
         builder.Property(m => m.UpdatedAt).HasColumnName("updated_at");
-
+        
         builder.OwnsOne(m => m.RawKey, mb =>
         {
             mb.ToJson("raw_key");
@@ -60,7 +60,7 @@ public class MediaAssertConfiguration : IEntityTypeConfiguration<MediaAsset>
             mb.Property(rk => rk.Value).HasColumnName("value");
             mb.Property(rk => rk.FullPath).HasColumnName("full_path");
         });
-
+        
         builder.OwnsOne(m => m.FinalKey, mb =>
         {
             mb.ToJson("final_key");
@@ -71,7 +71,7 @@ public class MediaAssertConfiguration : IEntityTypeConfiguration<MediaAsset>
             mb.Property(rk => rk.Value).HasColumnName("value");
             mb.Property(rk => rk.FullPath).HasColumnName("full_path");
         });
-
+        
         builder.OwnsOne(m => m.Owner, mb =>
         {
             mb.ToJson("owner");
