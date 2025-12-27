@@ -13,23 +13,22 @@ public abstract class MediaAsset
     public Status Status { get; protected set; }
     public DateTime CreatedAt { get; protected set; }
     public DateTime UpdatedAt { get; protected set; }
-    public StorageKey RawKey { get; protected set; }
-    public StorageKey FinalKey { get; protected set; }
+    public StorageKey? RawKey { get; protected set; }
+    public StorageKey? FinalKey { get; protected set; }
     public MediaOwner Owner { get; protected set; }
 
     //EfCore constructor
     protected MediaAsset()
     {
-        
     }
-    
+
     protected MediaAsset(
         Guid id,
         MediaData mediaData,
         AssetType assetType,
         Status status,
-        StorageKey rawKey,
-        StorageKey finalKey,
+        StorageKey? rawKey,
+        StorageKey? finalKey,
         MediaOwner owner)
     {
         Id = id;
@@ -41,6 +40,25 @@ public abstract class MediaAsset
         RawKey = rawKey;
         FinalKey = finalKey;
         Owner = owner;
+    }
+
+    public static Result<MediaAsset, Error> CreateForUpload(MediaData mediaData, AssetType assetType)
+    {
+        var assetId = Guid.NewGuid();
+        var mediaOwner = MediaOwner.ForDepartments(Guid.NewGuid()).Value;
+
+        switch (assetType)
+        {
+            case AssetType.Video:
+                var videoResult = VideoAsset.CreateForUpload(assetId, mediaData, mediaOwner);
+                return videoResult.IsFailure ? videoResult.Error : videoResult.Value;
+            case AssetType.Preview:
+                var previewResult = PreviewAsset.CreateForUpload(assetId, mediaData, mediaOwner);
+                return previewResult.IsFailure ? previewResult.Error : previewResult.Value;
+            
+            default:
+                throw new ArgumentOutOfRangeException(nameof(assetType), assetType, null);
+        }
     }
 
     public UnitResult<Error> MarkUploaded(DateTime updatedAt)

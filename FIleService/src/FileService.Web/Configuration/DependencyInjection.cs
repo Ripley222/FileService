@@ -8,16 +8,18 @@ public static class DependencyInjection
     public static IServiceCollection AddConfiguration(
         this IServiceCollection services, IConfiguration configuration)
     {
-        return services
-            .AddSerilogLogging(configuration)
-            .AddOpenApiSpec();
+        services.AddSerilogLogging(configuration);
+        services.AddOpenApiSpec();
+
+        return services;
     }
     
     private static IServiceCollection AddOpenApiSpec(this IServiceCollection services)
     {
-        return services
-            .AddOpenApi()
-            .AddSwaggerGen();
+        services.AddOpenApi();
+        services.AddSwaggerGen();
+
+        return services;
     }
     
     private static IServiceCollection AddSerilogLogging(

@@ -66,4 +66,14 @@ public sealed record StorageKey
 
         return normalizedValue;
     }
+
+    public bool IsEmpty()
+    {
+        bool isEmpty = string.IsNullOrWhiteSpace(Key) 
+                       && string.IsNullOrWhiteSpace(Bucket)
+                       && string.IsNullOrWhiteSpace(Value)
+                       && string.IsNullOrWhiteSpace(FullPath);
+        
+        return isEmpty;
+    }
 }

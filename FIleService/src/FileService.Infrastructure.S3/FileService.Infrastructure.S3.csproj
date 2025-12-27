@@ -12,4 +12,10 @@
       <ProjectReference Include="..\FileService.Domain\FileService.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.17" />
+      <PackageReference Include="AWSSDK.S3" Version="4.0.15.2" />
+      <PackageReference Include="ServicesProject.Framework" Version="0.0.2" />
+    </ItemGroup>
+
 </Project>

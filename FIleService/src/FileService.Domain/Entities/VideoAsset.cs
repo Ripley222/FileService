@@ -35,7 +35,7 @@ public class VideoAsset : MediaAsset
     {
     }
 
-    public static Result<VideoAsset, Error> Create(Guid id, MediaData mediaData, MediaOwner owner)
+    public static Result<VideoAsset, Error> CreateForUpload(Guid id, MediaData mediaData, MediaOwner owner)
     {
         var validationResult = ValidateForUpload(mediaData);
         if (validationResult.IsFailure)

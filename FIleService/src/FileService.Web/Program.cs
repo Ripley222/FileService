@@ -1,5 +1,7 @@
 using System.Globalization;
+using FileService.Core;
 using FileService.Infrastructure.Postgres;
+using FileService.Infrastructure.S3;
 using FileService.Web.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -14,13 +16,14 @@ try
     Log.Information("Starting web application");
 
     var builder = WebApplication.CreateBuilder(args);
-    builder.Services.AddConfiguration(builder.Configuration);
-    
-    var environment = builder.Environment.EnvironmentName;
 
+    var environment = builder.Environment.EnvironmentName;
     builder.Configuration.AddJsonFile($"appsettings.{environment}.json", true, true);
-    
+
+    builder.Services.AddConfiguration(builder.Configuration);
     builder.Services.AddInfrastructurePostgres(builder.Configuration);
+    builder.Services.AddS3Infrastructure(builder.Configuration);
+    builder.Services.AddApplication();
 
     var app = builder.Build();
 
