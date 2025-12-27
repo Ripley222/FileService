@@ -29,8 +29,8 @@ public sealed class RemoveEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapDelete("remove", async (
-                [FromQuery] Guid fileId,
+        app.MapDelete("files/{fileId:guid}", async (
+                Guid fileId,
                 [FromServices] DeleteFileHandler handler,
                 CancellationToken cancellationToken) =>
             {

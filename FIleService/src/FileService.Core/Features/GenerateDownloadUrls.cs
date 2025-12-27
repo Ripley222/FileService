@@ -29,8 +29,8 @@ public sealed class GenerateDownloadUrlsEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("download-urls", async (
-            [FromQuery] Guid[] fileIds,
+        app.MapGet("files/download-urls", async (
+            Guid[] fileIds,
             [FromServices] GeneratePresignedUrlsHandler presignedUrlsHandler,
             CancellationToken cancellationToken) =>
         {

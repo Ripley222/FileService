@@ -33,8 +33,8 @@ public sealed class DownloadEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("download", async (
-            [FromQuery] Guid fileId,
+        app.MapGet("files/{fileId:guid}", async (
+            Guid fileId,
             [FromQuery] string path,
             [FromServices] DownloadFileHandler handler,
             CancellationToken cancellationToken) =>

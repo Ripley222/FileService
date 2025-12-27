@@ -29,8 +29,8 @@ public sealed class GenerateUploadUrlEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("upload-url", async (
-            [FromQuery] Guid fileId,
+        app.MapGet("files/{fileId:guid}/upload-url", async (
+            Guid fileId,
             [FromServices] GeneratePresignedUrlHandler handler,
             CancellationToken cancellationToken) =>
         {

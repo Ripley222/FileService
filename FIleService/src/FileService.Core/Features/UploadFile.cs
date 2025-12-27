@@ -40,7 +40,7 @@ public sealed class UploadEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("upload", async (
+        app.MapPost("files", async (
             IFormFile file,
             [FromServices] UploadFileHandler handler,
             CancellationToken cancellationToken) =>
