@@ -1,4 +1,5 @@
-﻿using FileService.Core.Repositories;
+﻿using FileService.Core.Database;
+using FileService.Core.Repositories;
 using FileService.Infrastructure.Postgres.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +32,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IMediaRepository, MediaRepository>();
+        services.AddScoped<IReadDbContext, FileServiceDbContext>();
 
         return services;
     }
