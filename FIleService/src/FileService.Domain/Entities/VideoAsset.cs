@@ -15,7 +15,7 @@ public class VideoAsset : MediaAsset
     public const string HLS_PREFIX = "hls";
     public const string MASTER_PLAYLIST_NAME = "master.m3u8";
 
-    public static readonly string[] AllowedExtensions = ["mp4", "mkv", "avi", "mov"];
+    public static readonly string[] AllowedExtensions = [".mp4", ".mkv", ".avi", ".mov"];
 
     public StorageKey HlsRootKey { get; private set; } = null!;
 

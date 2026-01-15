@@ -18,9 +18,9 @@ public sealed class GenerateUploadUrlRequestValidator : AbstractValidator<Genera
 {
     public GenerateUploadUrlRequestValidator()
     {
-        RuleFor(g => g.FileId)
+        RuleFor(g => g.MediaAssetId)
             .Must(id => id != Guid.Empty)
-            .WithError(Errors.General.ValueIsInvalid("FileId"));
+            .WithError(Errors.General.ValueIsInvalid("MediaAssetId"));
     }
 }
 
@@ -29,11 +29,11 @@ public sealed class GenerateUploadUrlEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("files/{fileId:guid}/upload-url", async (
-            Guid fileId,
+            Guid mediaAssetId,
             [FromServices] GeneratePresignedUrlHandler handler,
             CancellationToken cancellationToken) =>
         {
-            var result = await handler.Handle(new DownloadPresignedUrlRequest(fileId), cancellationToken);
+            var result = await handler.Handle(new DownloadPresignedUrlRequest(mediaAssetId), cancellationToken);
 
             return Results.Ok(result.Value);
         });
@@ -66,7 +66,7 @@ public sealed class GenerateUploadUrlHandler
         if (validationResult.IsValid is false)
             return validationResult.GetErrors();
         
-        var mediaAssetResult = await _mediaRepository.GetByIdAsync(request.FileId, cancellationToken);
+        var mediaAssetResult = await _mediaRepository.GetByIdAsync(request.MediaAssetId, cancellationToken);
         if (mediaAssetResult.IsFailure)
             return mediaAssetResult.Error.ToErrors();
         
@@ -80,7 +80,7 @@ public sealed class GenerateUploadUrlHandler
         if (uploadUrlResult.IsFailure)
             return uploadUrlResult.Error.ToErrors();
         
-        _logger.LogInformation("Generated upload URL for file with id {fileId}.", request.FileId);
+        _logger.LogInformation("Generated upload URL for file with id {fileId}.", request.MediaAssetId);
 
         return uploadUrlResult.Value;
     }

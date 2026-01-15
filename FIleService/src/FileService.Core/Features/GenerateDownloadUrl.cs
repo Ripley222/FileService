@@ -18,9 +18,9 @@ public sealed class DownloadPresignedUrlRequestValidator : AbstractValidator<Dow
 {
     public DownloadPresignedUrlRequestValidator()
     {
-        RuleFor(d => d.FileId)
+        RuleFor(d => d.MediaAssetId)
             .Must(id => id != Guid.Empty)
-            .WithError(Errors.General.ValueIsRequired("FileId"));
+            .WithError(Errors.General.ValueIsRequired("MediaAssetId"));
     }
 }
 
@@ -29,11 +29,11 @@ public sealed class GenerateDownloadUrlEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("files/{fileId:guid}/download-url", async (
-            Guid fileId,
+            Guid mediaAssetId,
             [FromServices] GeneratePresignedUrlHandler presignedUrlHandler,
             CancellationToken cancellationToken) =>
         {
-            var result = await presignedUrlHandler.Handle(new DownloadPresignedUrlRequest(fileId), cancellationToken);
+            var result = await presignedUrlHandler.Handle(new DownloadPresignedUrlRequest(mediaAssetId), cancellationToken);
 
             return Results.Ok(result.Value);
         }).DisableAntiforgery();
@@ -66,7 +66,7 @@ public sealed class GeneratePresignedUrlHandler
         if (validationResult.IsValid is false)
             return validationResult.GetErrors();
 
-        var mediaAssetResult = await _mediaRepository.GetByIdAsync(request.FileId, cancellationToken);
+        var mediaAssetResult = await _mediaRepository.GetByIdAsync(request.MediaAssetId, cancellationToken);
         if (mediaAssetResult.IsFailure)
             return mediaAssetResult.Error.ToErrors();
 
@@ -78,7 +78,7 @@ public sealed class GeneratePresignedUrlHandler
         if (presignedUrlResult.IsFailure)
             return presignedUrlResult.Error.ToErrors();
 
-        _logger.LogInformation("Generated download URL for file with id {fileId}.", request.FileId);
+        _logger.LogInformation("Generated download URL for file with id {fileId}.", request.MediaAssetId);
 
         return presignedUrlResult.Value;
     }
