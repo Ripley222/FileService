@@ -3,6 +3,7 @@ using FileService.Core;
 using FileService.Infrastructure.Postgres;
 using FileService.Infrastructure.S3;
 using FileService.Web.Configuration;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -24,6 +25,16 @@ try
     builder.Services.AddInfrastructurePostgres(builder.Configuration);
     builder.Services.AddS3Infrastructure(builder.Configuration);
     builder.Services.AddApplication();
+
+    builder.Services.Configure<FormOptions>(options =>
+    {
+        options.MultipartBodyLengthLimit = long.MaxValue;
+    });
+    
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.Limits.MaxRequestBodySize = null; // без лимита
+    });
 
     var app = builder.Build();
 

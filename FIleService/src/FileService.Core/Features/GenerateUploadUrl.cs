@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using FileService.Contracts.Requests;
 using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Core.Repositories;
@@ -12,8 +13,6 @@ using Shared.Core.Validation;
 using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
-
-public sealed record GenerateUploadUrlRequest(Guid FileId);
 
 public sealed class GenerateUploadUrlRequestValidator : AbstractValidator<GenerateUploadUrlRequest>
 {

@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using FileService.Contracts.Requests;
 using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Core.Repositories;
@@ -13,15 +14,13 @@ using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
 
-public sealed record RemoveFileRequest(Guid FileId);
-
 public sealed class RemoveFileRequestValidator : AbstractValidator<RemoveFileRequest>
 {
     public RemoveFileRequestValidator()
     {
-        RuleFor(x => x.FileId)
+        RuleFor(x => x.MediaAssetId)
             .Must(id => id != Guid.Empty)
-            .WithError(Errors.General.ValueIsInvalid("FileId"));
+            .WithError(Errors.General.ValueIsInvalid("MediaAssetId"));
     }
 }
 
@@ -29,12 +28,12 @@ public sealed class RemoveEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapDelete("files/{fileId:guid}", async (
-                Guid fileId,
+        app.MapDelete("files/{mediaAssetId:guid}", async (
+                Guid mediaAssetId,
                 [FromServices] DeleteFileHandler handler,
                 CancellationToken cancellationToken) =>
             {
-                var result = await handler.Handle(new RemoveFileRequest(fileId), cancellationToken);
+                var result = await handler.Handle(new RemoveFileRequest(mediaAssetId), cancellationToken);
 
                 return Results.Ok(result.Value);
             })
@@ -68,7 +67,7 @@ public sealed class DeleteFileHandler
         if (validationResult.IsValid is false)
             return validationResult.GetErrors();
         
-        var mediaAssetResult = await _mediaRepository.GetByIdAsync(request.FileId, cancellationToken);
+        var mediaAssetResult = await _mediaRepository.GetByIdAsync(request.MediaAssetId, cancellationToken);
         if (mediaAssetResult.IsFailure)
             return mediaAssetResult.Error.ToErrors();
 
@@ -88,7 +87,7 @@ public sealed class DeleteFileHandler
         if (saveChangesResult.IsFailure)
             return saveChangesResult.Error.ToErrors();
 
-        _logger.LogInformation("File with id {fileId} deleted.", request.FileId);
+        _logger.LogInformation("File with id {fileId} deleted.", request.MediaAssetId);
 
         return removeFileInS3Result.Value;
     }

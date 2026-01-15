@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using FileService.Contracts.Requests;
 using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Core.Repositories;
@@ -12,8 +13,6 @@ using Shared.Core.Validation;
 using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
-
-public sealed record DownloadPresignedUrlRequest(Guid FileId);
 
 public sealed class DownloadPresignedUrlRequestValidator : AbstractValidator<DownloadPresignedUrlRequest>
 {
@@ -71,11 +70,11 @@ public sealed class GeneratePresignedUrlHandler
         if (mediaAssetResult.IsFailure)
             return mediaAssetResult.Error.ToErrors();
 
-        var key = mediaAssetResult.Value.RawKey!.IsEmpty()
+        var storageKey = mediaAssetResult.Value.RawKey!.IsEmpty()
             ? mediaAssetResult.Value.FinalKey
             : mediaAssetResult.Value.RawKey;
 
-        var presignedUrlResult = await _s3Provider.GenerateDownloadUrlAsync(key!);
+        var presignedUrlResult = await _s3Provider.GenerateDownloadUrlAsync(storageKey!);
         if (presignedUrlResult.IsFailure)
             return presignedUrlResult.Error.ToErrors();
 

@@ -33,13 +33,13 @@ public sealed class DownloadEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("files/{fileId:guid}", async (
-            Guid fileId,
+        app.MapGet("files/{mediaAssetId:guid}/content", async (
+            Guid mediaAssetId,
             [FromQuery] string path,
             [FromServices] DownloadFileHandler handler,
             CancellationToken cancellationToken) =>
         {
-            var result = await handler.Handle(new DownloadFileRequest(fileId, path), cancellationToken);
+            var result = await handler.Handle(new DownloadFileRequest(mediaAssetId, path), cancellationToken);
 
             return Results.Ok(result.Value);
         });

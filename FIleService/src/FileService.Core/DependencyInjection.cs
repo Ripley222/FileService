@@ -14,9 +14,11 @@ public static class DependencyInjection
         services.AddEndpoints(assembly);
 
         services.AddScoped<UploadFileHandler>();
+        services.AddScoped<MultipartUploadHandler>();
         services.AddScoped<DownloadFileHandler>();
+        services.AddScoped<GetMediaAssetInfoHandler>();
         services.AddScoped<GeneratePresignedUrlHandler>();
-        services.AddScoped<GeneratePresignedUrlsHandler>();
+        services.AddScoped<GetMediaAssetsInfoHandler>();
         services.AddScoped<GenerateUploadUrlHandler>();
         services.AddScoped<DeleteFileHandler>();
 
