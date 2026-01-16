@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using FileService.Contracts.Requests;
 using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Core.Repositories;
@@ -13,15 +14,13 @@ using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
 
-public sealed record DownloadPresignedUrlRequest(Guid FileId);
-
 public sealed class DownloadPresignedUrlRequestValidator : AbstractValidator<DownloadPresignedUrlRequest>
 {
     public DownloadPresignedUrlRequestValidator()
     {
-        RuleFor(d => d.FileId)
+        RuleFor(d => d.MediaAssetId)
             .Must(id => id != Guid.Empty)
-            .WithError(Errors.General.ValueIsRequired("FileId"));
+            .WithError(Errors.General.ValueIsRequired("MediaAssetId"));
     }
 }
 
@@ -30,11 +29,11 @@ public sealed class GenerateDownloadUrlEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("files/{fileId:guid}/download-url", async (
-            Guid fileId,
+            Guid mediaAssetId,
             [FromServices] GeneratePresignedUrlHandler presignedUrlHandler,
             CancellationToken cancellationToken) =>
         {
-            var result = await presignedUrlHandler.Handle(new DownloadPresignedUrlRequest(fileId), cancellationToken);
+            var result = await presignedUrlHandler.Handle(new DownloadPresignedUrlRequest(mediaAssetId), cancellationToken);
 
             return Results.Ok(result.Value);
         }).DisableAntiforgery();
@@ -67,19 +66,19 @@ public sealed class GeneratePresignedUrlHandler
         if (validationResult.IsValid is false)
             return validationResult.GetErrors();
 
-        var mediaAssetResult = await _mediaRepository.GetByIdAsync(request.FileId, cancellationToken);
+        var mediaAssetResult = await _mediaRepository.GetByIdAsync(request.MediaAssetId, cancellationToken);
         if (mediaAssetResult.IsFailure)
             return mediaAssetResult.Error.ToErrors();
 
-        var key = mediaAssetResult.Value.RawKey!.IsEmpty()
+        var storageKey = mediaAssetResult.Value.RawKey!.IsEmpty()
             ? mediaAssetResult.Value.FinalKey
             : mediaAssetResult.Value.RawKey;
 
-        var presignedUrlResult = await _s3Provider.GenerateDownloadUrlAsync(key!);
+        var presignedUrlResult = await _s3Provider.GenerateDownloadUrlAsync(storageKey!);
         if (presignedUrlResult.IsFailure)
             return presignedUrlResult.Error.ToErrors();
 
-        _logger.LogInformation("Generated download URL for file with id {fileId}.", request.FileId);
+        _logger.LogInformation("Generated download URL for file with id {fileId}.", request.MediaAssetId);
 
         return presignedUrlResult.Value;
     }

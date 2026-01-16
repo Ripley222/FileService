@@ -3,8 +3,7 @@
 public enum AssetType
 {
     Video,
-    Preview,
-    Avatar
+    Preview
 }
 
 public static class AssetTypeExtensions

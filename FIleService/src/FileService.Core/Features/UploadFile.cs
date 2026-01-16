@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using FileService.Contracts.Requests;
 using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Core.Repositories;
@@ -16,22 +17,20 @@ using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
 
-public sealed record UploadFileRequest(string FileName, Stream Stream, string ContentType, long Size);
-
-public sealed class UploadFileRequestValidator: AbstractValidator<UploadFileRequest>
+public sealed class UploadFileRequestValidator : AbstractValidator<UploadFileRequest>
 {
     public UploadFileRequestValidator()
     {
         RuleFor(u => u.FileName)
             .NotEmpty()
             .WithError(Errors.General.ValueIsInvalid("FileName"));
-        
+
         RuleFor(u => u.ContentType)
             .NotEmpty()
             .WithError(Errors.General.ValueIsInvalid("ContentType"));
-        
+
         RuleFor(u => u.Size)
-            .NotEmpty()
+            .Must(s => s > 0)
             .WithError(Errors.General.ValueIsInvalid("Size"));
     }
 }
@@ -65,18 +64,24 @@ public sealed class UploadEndpoint : IEndpoint
 public sealed class UploadFileHandler
 {
     private readonly IS3Provider _s3Provider;
+    private readonly IS3Options _s3Options;
     private readonly IMediaRepository _mediaRepository;
+    private readonly IChunkSizeCalculator _chunkSizeCalculator;
     private readonly IValidator<UploadFileRequest> _validator;
     private readonly ILogger<UploadFileHandler> _logger;
 
     public UploadFileHandler(
         IS3Provider s3Provider,
-        IMediaRepository mediaRepository, 
+        IS3Options s3Options,
+        IMediaRepository mediaRepository,
+        IChunkSizeCalculator chunkSizeCalculator,
         IValidator<UploadFileRequest> validator,
         ILogger<UploadFileHandler> logger)
     {
         _s3Provider = s3Provider;
+        _s3Options = s3Options;
         _mediaRepository = mediaRepository;
+        _chunkSizeCalculator = chunkSizeCalculator;
         _validator = validator;
         _logger = logger;
     }
@@ -96,7 +101,14 @@ public sealed class UploadFileHandler
         if (contentTypeResult.IsFailure)
             return contentTypeResult.Error.ToErrors();
 
-        var mediaDataResult = MediaData.Create(fileNameResult.Value, contentTypeResult.Value, request.Size, 1);
+        var calculate = _chunkSizeCalculator.ChunksCalculator(
+            request.Size,
+            _s3Options.RecommendedChunksSizeBytes,
+            _s3Options.MaxChunks);
+
+        var mediaDataResult = MediaData.Create(
+            fileNameResult.Value, contentTypeResult.Value, request.Size, calculate.Value.Item2);
+       
         if (mediaDataResult.IsFailure)
             return mediaDataResult.Error.ToErrors();
 
@@ -108,12 +120,10 @@ public sealed class UploadFileHandler
         if (saveResult.IsFailure)
             return saveResult.Error.ToErrors();
 
-        var key = mediaAssetResult.Value.RawKey!.IsEmpty()
-            ? mediaAssetResult.Value.FinalKey
-            : mediaAssetResult.Value.RawKey;
+        var storageKey = mediaAssetResult.Value.RawKey ?? mediaAssetResult.Value.FinalKey;
 
         var uploadResult = await _s3Provider.UploadFileAsync(
-            key!,
+            storageKey!,
             request.Stream,
             mediaDataResult.Value,
             cancellationToken);

@@ -16,6 +16,12 @@ public static class DependencyInjection
     {
         services.Configure<S3Options>(configuration.GetSection(nameof(S3Options)));
 
+        services.AddSingleton<IS3Options, S3Options>(sp =>
+        {
+            var s3Options = sp.GetRequiredService<IOptions<S3Options>>();
+            return s3Options.Value;
+        });
+
         services.AddSingleton<IAmazonS3>(sp =>
         {
             var s3Options = sp.GetRequiredService<IOptions<S3Options>>().Value;
@@ -26,13 +32,15 @@ public static class DependencyInjection
                 UseHttp = s3Options.WithSsl,
                 ForcePathStyle = true
             };
-            
+
             return new AmazonS3Client(s3Options.AccessKey, s3Options.SecretKey, config);
         });
 
         services.AddHostedService<S3BucketsInitializationService>();
 
         services.AddScoped<IS3Provider, S3Provider>();
+
+        services.AddTransient<IChunkSizeCalculator, ChunkSizeCalculator>();
         
         return services;
     }
