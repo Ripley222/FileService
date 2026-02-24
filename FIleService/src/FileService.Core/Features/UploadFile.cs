@@ -1,6 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using FileService.Contracts.Requests;
-using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Core.Repositories;
 using FileService.Domain.Entities;
@@ -13,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Shared.Core.Validation;
+using Shared.Framework.Endpoints;
 using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
@@ -54,9 +54,9 @@ public sealed class UploadEndpoint : IEndpoint
                 contentType,
                 file.Length);
 
-            var result = await handler.Handle(request, cancellationToken);
-
-            return Results.Ok(result);
+            UnitResult<ErrorList> result = await handler.Handle(request, cancellationToken);
+            
+            return new EndpointResult<bool>(result);
         }).DisableAntiforgery();
     }
 }
@@ -108,7 +108,7 @@ public sealed class UploadFileHandler
 
         var mediaDataResult = MediaData.Create(
             fileNameResult.Value, contentTypeResult.Value, request.Size, calculate.Value.Item2);
-       
+
         if (mediaDataResult.IsFailure)
             return mediaDataResult.Error.ToErrors();
 

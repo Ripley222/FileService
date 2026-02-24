@@ -1,7 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using FileService.Contracts.Requests;
 using FileService.Contracts.Responses;
-using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Core.Repositories;
 using FluentValidation;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Shared.Core.Validation;
+using Shared.Framework.Endpoints;
 using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
@@ -42,9 +42,9 @@ public sealed class ChunkUploadUrlEndpoint : IEndpoint
                 [FromServices] GenerateChunkUploadUrlHandler handler,
                 CancellationToken cancellationToken) =>
             {
-                var result = await handler.Handle(request, cancellationToken);
+                Result<ChunkUploadUrlResponse, ErrorList> result = await handler.Handle(request, cancellationToken);
 
-                return Results.Ok(result.Value);
+                return new EndpointResult<ChunkUploadUrlResponse>(result);
             })
             .DisableAntiforgery();
     }
@@ -85,13 +85,13 @@ public sealed class GenerateChunkUploadUrlHandler
 
         var chunkUploadUrlResult = await _s3Provider.CreateChunkUploadUrlAsync(
             storageKey!,
-            request.UploadId, 
+            request.UploadId,
             request.PartNumber,
             cancellationToken);
 
         if (chunkUploadUrlResult.IsFailure)
             return chunkUploadUrlResult.Error.ToErrors();
-        
+
         _logger.LogInformation("Success generate upload URl for chunk file");
 
         return new ChunkUploadUrlResponse(

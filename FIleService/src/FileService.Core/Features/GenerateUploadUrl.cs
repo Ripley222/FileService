@@ -1,6 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using FileService.Contracts.Requests;
-using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Core.Repositories;
 using FluentValidation;
@@ -10,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Shared.Core.Validation;
+using Shared.Framework.Endpoints;
 using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
@@ -33,9 +33,10 @@ public sealed class GenerateUploadUrlEndpoint : IEndpoint
             [FromServices] GeneratePresignedUrlHandler handler,
             CancellationToken cancellationToken) =>
         {
-            var result = await handler.Handle(new DownloadPresignedUrlRequest(mediaAssetId), cancellationToken);
+            Result<string, ErrorList> result =
+                await handler.Handle(new DownloadPresignedUrlRequest(mediaAssetId), cancellationToken);
 
-            return Results.Ok(result.Value);
+            return new EndpointResult<string>(result);
         });
     }
 }
@@ -46,7 +47,7 @@ public sealed class GenerateUploadUrlHandler
     private readonly IMediaRepository _mediaRepository;
     private readonly IValidator<GenerateUploadUrlRequest> _validator;
     private readonly ILogger<GenerateUploadUrlHandler> _logger;
-    
+
     public GenerateUploadUrlHandler(
         IS3Provider s3Provider,
         IMediaRepository mediaRepository,
@@ -65,21 +66,21 @@ public sealed class GenerateUploadUrlHandler
         var validationResult = await _validator.ValidateAsync(request, cancellationToken);
         if (validationResult.IsValid is false)
             return validationResult.GetErrors();
-        
+
         var mediaAssetResult = await _mediaRepository.GetByIdAsync(request.MediaAssetId, cancellationToken);
         if (mediaAssetResult.IsFailure)
             return mediaAssetResult.Error.ToErrors();
-        
-        var key = mediaAssetResult.Value.RawKey!.IsEmpty() 
+
+        var key = mediaAssetResult.Value.RawKey!.IsEmpty()
             ? mediaAssetResult.Value.FinalKey
             : mediaAssetResult.Value.RawKey;
-        
+
         var uploadUrlResult = await _s3Provider
             .GenerateUploadUrlAsync(key!, mediaAssetResult.Value.MediaData, cancellationToken);
-        
+
         if (uploadUrlResult.IsFailure)
             return uploadUrlResult.Error.ToErrors();
-        
+
         _logger.LogInformation("Generated upload URL for file with id {fileId}.", request.MediaAssetId);
 
         return uploadUrlResult.Value;
