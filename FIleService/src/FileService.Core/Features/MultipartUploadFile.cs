@@ -34,10 +34,6 @@ public sealed class MultipartUploadRequestValidator : AbstractValidator<Multipar
             .Must(s => s > 0)
             .WithError(Errors.General.ValueIsInvalid("Size"));
 
-        RuleFor(m => m.AssetType)
-            .NotEmpty()
-            .WithError(Errors.General.ValueIsInvalid("AssetType"));
-
         RuleFor(m => m.Context)
             .NotEmpty()
             .WithError(Errors.General.ValueIsInvalid("Context"));
@@ -63,7 +59,6 @@ public sealed class MultipartUploadEndpoint : IEndpoint
                     file.FileName,
                     file.ContentType,
                     file.Length,
-                    file.ContentType,
                     context,
                     contextId);
 
@@ -126,7 +121,7 @@ public sealed class MultipartUploadHandler
         if (mediaDataResult.IsFailure)
             return mediaDataResult.Error.ToErrors();
 
-        var mediaAssetResult = MediaAsset.CreateForUpload(mediaDataResult.Value, request.AssetType.ToAssetType());
+        var mediaAssetResult = MediaAsset.CreateForUpload(mediaDataResult.Value, request.ContentType.ToAssetType());
         if (mediaAssetResult.IsFailure)
             return mediaAssetResult.Error.ToErrors();
 

@@ -48,16 +48,14 @@ internal sealed class FileHttpClient : IFileCommunicationService
         }
     }
 
-    public async Task<Result<string, ErrorList>> DownloadFile(DownloadFileRequest request, CancellationToken cancellationToken)
+    public async Task<Result<string, ErrorList>> DownloadFile(DownloadPresignedUrlRequest request, CancellationToken cancellationToken)
     {
         try
         {
-            string requestUri = QueryHelpers.AddQueryString(
-                $"file-service/files/{request.FileId}/content", 
-                "path", 
-                request.Path);
+            HttpResponseMessage message = await _httpClient.GetAsync(
+                $"file-service/files/{request.MediaAssetId}/download-url", 
+                cancellationToken);
             
-            HttpResponseMessage message = await _httpClient.GetAsync(requestUri, cancellationToken);
             return await message.HandleResponseAsync<string>(cancellationToken);
         }
         catch (Exception ex)
@@ -67,14 +65,12 @@ internal sealed class FileHttpClient : IFileCommunicationService
         }
     }
 
-    public async Task<UnitResult<ErrorList>> UploadFile(UploadFileRequest request, CancellationToken cancellationToken)
+    public async Task<Result<string, ErrorList>> UploadFile(MultipartUploadRequest request, CancellationToken cancellationToken)
     {
         try
         {
-            HttpContent httpContent = new StreamContent(request.Stream);
-            
-            HttpResponseMessage message = await _httpClient.PostAsync("file-service/files", httpContent, cancellationToken);
-            return await message.HandleResponseAsync(cancellationToken);
+            HttpResponseMessage message = await _httpClient.GetAsync("files/multipart/start", cancellationToken);
+            return await message.HandleResponseAsync<string>(cancellationToken);
         }
         catch (Exception ex)
         {

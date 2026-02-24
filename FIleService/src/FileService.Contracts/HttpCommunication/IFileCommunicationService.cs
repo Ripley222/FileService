@@ -14,10 +14,10 @@ public interface IFileCommunicationService
         GetMediaAssetsInfoRequest request, CancellationToken cancellationToken);
 
     Task<Result<string, ErrorList>> DownloadFile(
-        DownloadFileRequest request, CancellationToken cancellationToken);
+        DownloadPresignedUrlRequest request, CancellationToken cancellationToken);
 
-    Task<UnitResult<ErrorList>> UploadFile(
-        UploadFileRequest request, CancellationToken cancellationToken);
+    Task<Result<string, ErrorList>> UploadFile(
+        MultipartUploadRequest request, CancellationToken cancellationToken);
     
     Task<Result<string, ErrorList>> RemoveFile(
         RemoveFileRequest request, CancellationToken cancellationToken);

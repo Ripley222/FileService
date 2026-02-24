@@ -18,7 +18,7 @@
         <OutputType>Library</OutputType>
         <TargetFramework>.net9.0</TargetFramework>
         <PackageId>FileService.Contracts</PackageId>
-        <Version>0.0.2</Version>
+        <Version>0.0.3</Version>
         <Authors>Petrunyak Nikita</Authors>
         <Company>Rec-Play-Pause</Company>
         <PackageDescription>FileService HTTP Communication</PackageDescription>
