@@ -1,16 +1,15 @@
 ﻿using CSharpFunctionalExtensions;
 using FileService.Contracts.Requests;
 using FileService.Contracts.Responses;
-using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Core.Repositories;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Shared.Core.Validation;
+using Shared.Framework.Endpoints;
 using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
@@ -44,9 +43,9 @@ public sealed class CompleteMultipartUploadEndpoint : IEndpoint
                 [FromServices] CompleteMultipartUploadHandler handler,
                 CancellationToken cancellationToken) =>
             {
-                var result = await handler.Handler(request, cancellationToken);
+                Result<CompleteMultipartUploadResponse, ErrorList> result = await handler.Handler(request, cancellationToken);
 
-                return Results.Ok(result.Value);
+                return new EndpointResult<CompleteMultipartUploadResponse>(result);
             })
             .DisableAntiforgery();
     }

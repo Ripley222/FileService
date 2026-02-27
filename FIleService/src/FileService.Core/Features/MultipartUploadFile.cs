@@ -1,7 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using FileService.Contracts.Requests;
 using FileService.Contracts.Responses;
-using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Core.Repositories;
 using FileService.Domain.Entities;
@@ -14,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Shared.Core.Validation;
+using Shared.Framework.Endpoints;
 using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
@@ -25,23 +25,19 @@ public sealed class MultipartUploadRequestValidator : AbstractValidator<Multipar
         RuleFor(m => m.FileName)
             .NotEmpty()
             .WithError(Errors.General.ValueIsInvalid("FileName"));
-        
+
         RuleFor(m => m.ContentType)
             .NotEmpty()
             .WithError(Errors.General.ValueIsInvalid("ContentType"));
-        
+
         RuleFor(m => m.Size)
             .Must(s => s > 0)
             .WithError(Errors.General.ValueIsInvalid("Size"));
-        
-        RuleFor(m => m.AssetType)
-            .NotEmpty()
-            .WithError(Errors.General.ValueIsInvalid("AssetType"));
-        
+
         RuleFor(m => m.Context)
             .NotEmpty()
             .WithError(Errors.General.ValueIsInvalid("Context"));
-        
+
         RuleFor(m => m.ContextId)
             .Must(id => id != Guid.Empty)
             .WithError(Errors.General.ValueIsInvalid("ContextId"));
@@ -53,25 +49,24 @@ public sealed class MultipartUploadEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("files/multipart/start", async (
-            IFormFile file,
-            [FromQuery] Guid contextId,
-            [FromQuery] string context,
-            [FromServices] MultipartUploadHandler handler,
-            CancellationToken cancellationToken) =>
-        {
-            var request = new MultipartUploadRequest(
-                file.FileName,
-                file.ContentType,
-                file.Length,
-                file.ContentType,
-                context,
-                contextId);
-            
-            var result = await handler.Handle(request, cancellationToken);
-            
-            return Results.Ok(result.Value);
-        })
-        .DisableAntiforgery();
+                IFormFile file,
+                [FromQuery] Guid contextId,
+                [FromQuery] string context,
+                [FromServices] MultipartUploadHandler handler,
+                CancellationToken cancellationToken) =>
+            {
+                var request = new MultipartUploadRequest(
+                    file.FileName,
+                    file.ContentType,
+                    file.Length,
+                    context,
+                    contextId);
+
+                Result<MultipartUploadResponse, ErrorList> result = await handler.Handle(request, cancellationToken);
+
+                return new EndpointResult<MultipartUploadResponse>(result);
+            })
+            .DisableAntiforgery();
     }
 }
 
@@ -126,7 +121,7 @@ public sealed class MultipartUploadHandler
         if (mediaDataResult.IsFailure)
             return mediaDataResult.Error.ToErrors();
 
-        var mediaAssetResult = MediaAsset.CreateForUpload(mediaDataResult.Value, request.AssetType.ToAssetType());
+        var mediaAssetResult = MediaAsset.CreateForUpload(mediaDataResult.Value, request.ContentType.ToAssetType());
         if (mediaAssetResult.IsFailure)
             return mediaAssetResult.Error.ToErrors();
 
@@ -152,9 +147,9 @@ public sealed class MultipartUploadHandler
 
         if (presignedUrlsResult.IsFailure)
             return presignedUrlsResult.Error.ToErrors();
-        
+
         _logger.LogInformation("Started multipart uploading file");
-        
+
         return new MultipartUploadResponse(
             mediaAssetResult.Value.Id,
             multipartUploadResult.Value,

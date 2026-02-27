@@ -6,4 +6,23 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="CSharpFunctionalExtensions" Version="3.6.0" />
+      <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.12" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.12" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.12" />
+      <PackageReference Include="servicesproject.sharedkernel" Version="0.0.5" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>.net9.0</TargetFramework>
+        <PackageId>FileService.Contracts</PackageId>
+        <Version>0.0.3</Version>
+        <Authors>Petrunyak Nikita</Authors>
+        <Company>Rec-Play-Pause</Company>
+        <PackageDescription>FileService HTTP Communication</PackageDescription>
+        <RepositoryUrl>https://github.com/Rec-Play-Pause</RepositoryUrl>
+    </PropertyGroup>
+
 </Project>

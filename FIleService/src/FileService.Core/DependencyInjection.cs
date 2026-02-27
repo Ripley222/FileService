@@ -19,7 +19,6 @@ public static class DependencyInjection
         services.AddScoped<GetMediaAssetInfoHandler>();
         services.AddScoped<GeneratePresignedUrlHandler>();
         services.AddScoped<GetMediaAssetsInfoHandler>();
-        services.AddScoped<GenerateUploadUrlHandler>();
         services.AddScoped<DeleteFileHandler>();
 
         services.AddValidatorsFromAssembly(assembly);

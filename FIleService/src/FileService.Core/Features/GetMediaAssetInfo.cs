@@ -3,17 +3,16 @@ using FileService.Contracts.DTOs;
 using FileService.Contracts.Requests;
 using FileService.Contracts.Responses;
 using FileService.Core.Database;
-using FileService.Core.Endpoints;
 using FileService.Core.FileProviders;
 using FileService.Domain.Entities.Enums;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Core.Validation;
+using Shared.Framework.Endpoints;
 using Shared.SharedKernel.Errors;
 
 namespace FileService.Core.Features;
@@ -37,9 +36,10 @@ public sealed class GetMediaAssetInfoEndpoint : IEndpoint
             [FromServices] GetMediaAssetInfoHandler handler,
             CancellationToken cancellationToken) =>
         {
-            var result = await handler.Handle(new GetMediaAssetInfoRequest(mediaAssetId), cancellationToken);
+            Result<GetMediaAssetInfoResponse, ErrorList> result = await handler
+                .Handle(new GetMediaAssetInfoRequest(mediaAssetId), cancellationToken);
 
-            return Results.Ok(result.Value);
+            return new EndpointResult<GetMediaAssetInfoResponse>(result);
         }).DisableAntiforgery();
     }
 }

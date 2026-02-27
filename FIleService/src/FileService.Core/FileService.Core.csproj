@@ -18,6 +18,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.12" />
       <PackageReference Include="servicesproject.core" Version="0.0.1" />
+      <PackageReference Include="servicesproject.framework" Version="0.0.6" />
     </ItemGroup>
 
 </Project>
